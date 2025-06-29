@@ -6,7 +6,8 @@ import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Clock, ChevronLeft, ChevronRight, Code, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Clock, ChevronLeft, ChevronRight, Code } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
 
 interface TechnicalRoundProps {
   onComplete: (round: string, score: number, percentage: number) => void;
@@ -20,7 +21,6 @@ const TechnicalRound = ({ onComplete, onBack }: TechnicalRoundProps) => {
   const [skippedQuestions, setSkippedQuestions] = useState<Set<number>>(new Set());
   const [isStarted, setIsStarted] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [showExitConfirmation, setShowExitConfirmation] = useState(false);
 
   const questions = [
     { type: 'mcq', category: 'DSA', question: 'What is the time complexity of binary search?', options: ['O(n)', 'O(log n)', 'O(n²)', 'O(1)'], correct: 'O(log n)', points: 2 },
@@ -95,23 +95,6 @@ const TechnicalRound = ({ onComplete, onBack }: TechnicalRoundProps) => {
     }
   };
 
-  const handleBackClick = () => {
-    if (isStarted && Object.keys(answers).length > 0) {
-      setShowExitConfirmation(true);
-    } else {
-      onBack();
-    }
-  };
-
-  const handleConfirmExit = () => {
-    setShowExitConfirmation(false);
-    onBack();
-  };
-
-  const handleCancelExit = () => {
-    setShowExitConfirmation(false);
-  };
-
   const handleSubmit = () => {
     const { correctAnswers, percentage } = calculateScore();
     console.log('Submitting answers:', answers);
@@ -181,13 +164,8 @@ const TechnicalRound = ({ onComplete, onBack }: TechnicalRoundProps) => {
             </div>
             
             <div className="flex space-x-4">
-              <Button variant="outline" onClick={handleBackClick} className="flex-1">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Dashboard
-              </Button>
-              <Button onClick={() => setIsStarted(true)} className="flex-1 bg-purple-500 hover:bg-purple-600">
-                Start Assessment
-              </Button>
+              <Button variant="outline" onClick={onBack}>Back to Dashboard</Button>
+              <Button onClick={() => setIsStarted(true)}>Start Assessment</Button>
             </div>
           </CardContent>
         </Card>
@@ -237,7 +215,7 @@ const TechnicalRound = ({ onComplete, onBack }: TechnicalRoundProps) => {
           <div className="mb-4 flex">
             <Button
               variant="outline"
-              onClick={handleBackClick}
+              onClick={onBack}
               className="bg-white text-black border-gray-300 hover:bg-gray-100"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -361,42 +339,25 @@ const TechnicalRound = ({ onComplete, onBack }: TechnicalRoundProps) => {
           </div>
         </div>
       </div>
-
-      {/* Exit Confirmation Dialog */}
-      {showExitConfirmation && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <Card className="w-full max-w-md mx-4 bg-white">
-            <CardHeader className="text-center">
-              <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertTriangle className="w-8 h-8 text-white" />
-              </div>
-              <CardTitle className="text-xl">Leave Assessment?</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-slate-600 text-center">
-                You have answered {Object.keys(answers).length} questions. 
-                Are you sure you want to leave? Your progress will be lost.
-              </p>
-              <div className="flex space-x-3">
-                <Button 
-                  variant="outline" 
-                  onClick={handleCancelExit} 
-                  className="flex-1"
-                >
-                  Continue Assessment
-                </Button>
-                <Button 
-                  onClick={handleConfirmExit} 
-                  className="flex-1 bg-red-500 hover:bg-red-600"
-                >
-                  Leave Assessment
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
+  );
+};
+
+// Parent component (e.g., CandidatePortal)
+const Parent = () => {
+  const navigate = useNavigate();
+  const [currentRound, setCurrentRound] = useState('dashboard');
+
+  const handleRoundComplete = (round, score, percentage) => {
+    // handle completion logic
+    setCurrentRound('dashboard');
+  };
+
+  return (
+    <TechnicalRound
+      onComplete={handleRoundComplete}
+      onBack={() => setCurrentRound('dashboard')}
+    />
   );
 };
 

@@ -18,7 +18,7 @@ const RecruiterPortal = ({ onBack }: RecruiterPortalProps) => {
   const candidates = [
     {
       id: 1,
-      name: 'Alice Johnson',
+      name: 'Debangshu Chatterjee',
       round1: { score: 85, status: 'completed', time: '45 mins' },
       round2: { score: 78, status: 'completed', time: '40 mins' },
       round3: { score: 92, status: 'completed', time: '28 mins' },
@@ -27,7 +27,7 @@ const RecruiterPortal = ({ onBack }: RecruiterPortalProps) => {
     },
     {
       id: 2,
-      name: 'Bob Smith',
+      name: 'Debojyoti De Majumder',
       round1: { score: 92, status: 'completed', time: '52 mins' },
       round2: { score: 88, status: 'in-progress', time: '20 mins' },
       round3: { score: null, status: 'pending', time: null },
@@ -36,7 +36,7 @@ const RecruiterPortal = ({ onBack }: RecruiterPortalProps) => {
     },
     {
       id: 3,
-      name: 'Carol Davis',
+      name: 'Sylvia Barick',
       round1: { score: 76, status: 'completed', time: '38 mins' },
       round2: { score: null, status: 'pending', time: null },
       round3: { score: null, status: 'pending', time: null },
