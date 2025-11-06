@@ -3,12 +3,21 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "resolutions": {
+    "@rollup/rollup-linux-x64-gnu": "^4.0.0"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc && vite build",
     "build:dev": "vite build --mode development",
+    "build:vercel": "npm ci --legacy-peer-deps && npm run build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "npm rebuild"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
