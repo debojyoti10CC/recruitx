@@ -24,7 +24,7 @@ const RoleSelector = ({ onRoleSelect, onBack }: RoleSelectorProps) => {
       description: 'Full stack development, system design, and problem solving',
       icon: Code,
       defaultStack: ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'Git'],
-      color: 'from-blue-500 to-indigo-500'
+      color: 'from-gray-700 to-black'
     },
     {
       id: 'ai-ml-engineer',
@@ -32,7 +32,7 @@ const RoleSelector = ({ onRoleSelect, onBack }: RoleSelectorProps) => {
       description: 'Machine learning models, data analysis, and AI implementation',
       icon: Brain,
       defaultStack: ['Python', 'TensorFlow', 'PyTorch', 'Scikit-learn', 'Pandas', 'NumPy'],
-      color: 'from-purple-500 to-pink-500'
+      color: 'from-gray-600 to-gray-800'
     },
     {
       id: 'data-scientist',
@@ -79,7 +79,7 @@ const RoleSelector = ({ onRoleSelect, onBack }: RoleSelectorProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-black">
       <div className="container mx-auto px-6 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-8">
@@ -99,7 +99,7 @@ const RoleSelector = ({ onRoleSelect, onBack }: RoleSelectorProps) => {
                   key={role.id}
                   className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${
                     selectedRole === role.id 
-                      ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20' 
+                      ? 'ring-2 ring-black dark:ring-white bg-gray-50 dark:bg-gray-800' 
                       : 'bg-white/80 dark:bg-slate-800/80'
                   } backdrop-blur-sm`}
                   onClick={() => handleRoleChange(role.id)}
@@ -175,7 +175,7 @@ const RoleSelector = ({ onRoleSelect, onBack }: RoleSelectorProps) => {
 
                 <Button 
                   onClick={handleStartAssessment}
-                  className="w-full bg-blue-500 hover:bg-blue-600"
+                  className="w-full bg-black dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-black"
                   size="lg"
                 >
                   <Play className="w-4 h-4 mr-2" />

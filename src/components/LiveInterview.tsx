@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Video, Eye, AlertCircle, Clock, Mic, MicOff, ChevronLeft, ChevronRight, Shield, Zap, Brain, Code2, AlertTriangle } from 'lucide-react';
-import { MonitoringData, UserProfile, createParameterizedMonitoringTest } from '@/utils/monitoringProfiles';
+import { MonitoringData, MonitoringProfile, monitoringProfiles, createParameterizedMonitoringTest, getMonitoringProfile } from '@/utils/monitoringProfiles';
 
 interface LiveInterviewProps {
   onComplete: (score: number) => void;
@@ -34,7 +34,17 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
     faceVisibility: 'complete',
     faceCount: 1
   });
-  
+
+  const [lastMonitoringUpdate, setLastMonitoringUpdate] = useState<string>('');
+  const [isPageVisible, setIsPageVisible] = useState<boolean>(!document.hidden);
+  const [isWindowFocused, setIsWindowFocused] = useState<boolean>(document.hasFocus());
+
+  // Real-time monitoring states
+  const [isTyping, setIsTyping] = useState<boolean>(false);
+  const [lastTypingTime, setLastTypingTime] = useState<number>(0);
+  const [suspiciousActivity, setSuspiciousActivity] = useState<number>(0);
+  const [focusLossCount, setFocusLossCount] = useState<number>(0);
+
   const [faceNotCompleteTimer, setFaceNotCompleteTimer] = useState(0);
   const [violations, setViolations] = useState<string[]>([]);
   const [criticalViolations, setCriticalViolations] = useState<string[]>([]);
@@ -107,7 +117,7 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
   const calculateScore = () => {
     let totalScore = 0;
     let maxScore = questions.reduce((sum, q) => sum + q.points, 0);
-    
+
     questions.forEach((q, index) => {
       const answer = answers[index];
       if (answer && answer.trim().length > 20) {
@@ -115,7 +125,7 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
         totalScore += Math.floor(q.points * codeQuality);
       }
     });
-    
+
     return { totalScore, maxScore };
   };
 
@@ -131,51 +141,159 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
   const flagViolation = (violation: string, type: 'critical' | 'warning') => {
     const timestamp = new Date().toLocaleTimeString();
     const violationWithTime = `${timestamp}: ${violation}`;
-    
+
     if (type === 'critical') {
       setCriticalViolations(prev => [...prev, violationWithTime]);
+      setIntegrityScore(prev => Math.max(0, prev - 40)); // Deduct 40 points for critical violations
     } else {
       setWarningViolations(prev => [...prev, violationWithTime]);
+      setIntegrityScore(prev => Math.max(0, prev - 10)); // Deduct 10 points for warnings
     }
-    
+
     setViolations(prev => [...prev, violationWithTime]);
+    setSimulationLog(prev => [...prev, `[${Math.floor((Date.now() - startTime) / 1000)}s] ${type.toUpperCase()}: ${violation}`]);
   };
 
-  // Current user profile for testing (can be changed for different test scenarios)
-  const currentUserProfile: UserProfile = 'normal_user'; // Change this to test different scenarios
-  
-  // Create parameterized monitoring test function
-  const monitoringTestFunction = createParameterizedMonitoringTest(currentUserProfile);
+  // Monitoring profile selection and simulation
+  const [selectedProfile, setSelectedProfile] = useState<MonitoringProfile>(monitoringProfiles[0]);
+  const [simulationLog, setSimulationLog] = useState<string[]>([]);
+  const [integrityScore, setIntegrityScore] = useState<number>(100);
   const [startTime] = useState(Date.now());
-  
-  // Parameterized monitoring test function
+
+  // Force update monitoring data when page visibility changes (not window focus)
+  useEffect(() => {
+    if (isStarted && !isPageVisible) {
+      // Only force update when tab is actually hidden
+      setMonitoringData({
+        eyeTracking: 'alert',
+        faceVisibility: 'not_visible',
+        faceCount: 0
+      });
+      setLastMonitoringUpdate(new Date().toLocaleTimeString());
+    }
+  }, [isPageVisible, isStarted]);
+
+  // Enhanced real-time monitoring with dynamic behavior detection
   const simulateMonitoring = () => {
     const elapsedTime = Date.now() - startTime;
-    const newMonitoringData = monitoringTestFunction(elapsedTime);
+    const currentTime = Math.floor(elapsedTime / 1000);
 
-    setMonitoringData(newMonitoringData);
+    // Create monitoring test function with current selected profile
+    const monitoringTestFunction = createParameterizedMonitoringTest(selectedProfile);
+    let newMonitoringData = monitoringTestFunction(elapsedTime);
 
-    // FLAG VIOLATIONS BASED ON PREDEFINED SEQUENCE
-    
-    // 1. Multiple faces detected - CRITICAL VIOLATION
+    // Real-time behavior analysis
+    const timeSinceLastTyping = Date.now() - lastTypingTime;
+    const isRecentlyTyping = timeSinceLastTyping < 5000; // 5 seconds
+
+    // Dynamic monitoring based on real user behavior
+    if (!isPageVisible) {
+      // Tab is hidden - immediate detection
+      newMonitoringData = {
+        eyeTracking: 'alert',
+        faceVisibility: 'not_visible',
+        faceCount: 0
+      };
+      setFocusLossCount(prev => prev + 1);
+    } else {
+      // Tab is visible - apply profile-based monitoring with real-time adjustments
+      if (selectedProfile.id === 'baseline_candidate') {
+        // Baseline with realistic variations
+        const variation = Math.random();
+        const typingBonus = isRecentlyTyping ? 0.1 : 0; // Better focus when typing
+
+        if (variation < (0.02 - typingBonus)) {
+          newMonitoringData = {
+            eyeTracking: 'warning',
+            faceVisibility: 'partial',
+            faceCount: 1
+          };
+        } else if (variation < (0.01 - typingBonus)) {
+          newMonitoringData = {
+            eyeTracking: 'alert',
+            faceVisibility: 'complete',
+            faceCount: 1
+          };
+        } else {
+          newMonitoringData = {
+            eyeTracking: isRecentlyTyping ? 'good' : 'good',
+            faceVisibility: 'complete',
+            faceCount: 1
+          };
+        }
+      } else if (selectedProfile.id === 'distracted_candidate') {
+        // Add extra distraction when not typing
+        if (!isRecentlyTyping && Math.random() < 0.3) {
+          newMonitoringData = {
+            eyeTracking: 'alert',
+            faceVisibility: Math.random() < 0.5 ? 'partial' : 'not_visible',
+            faceCount: Math.random() < 0.1 ? 0 : 1
+          };
+        }
+      } else if (selectedProfile.id === 'cheating_candidate') {
+        // Simulate more suspicious behavior during coding
+        if (isRecentlyTyping && Math.random() < 0.4) {
+          setSuspiciousActivity(prev => prev + 1);
+          newMonitoringData = {
+            ...newMonitoringData,
+            faceCount: Math.random() < 0.6 ? 2 : newMonitoringData.faceCount,
+            eyeTracking: 'alert'
+          };
+        }
+      }
+    }
+
+    // Real-time violation detection
     if (newMonitoringData.faceCount > 1) {
-      flagViolation(`Multiple faces detected (${newMonitoringData.faceCount} faces)`, 'critical');
+      if (currentTime % 2 === 0) { // More frequent flagging for critical violations
+        flagViolation(`${newMonitoringData.faceCount} faces detected - potential cheating`, 'critical');
+      }
     }
 
-    // 2. No face or face not visible - WARNING VIOLATION
-    if (newMonitoringData.faceCount === 0) {
-      flagViolation('No face detected', 'warning');
-    } else if (newMonitoringData.faceVisibility === 'not_visible') {
-      flagViolation('Face not visible', 'warning');
-    } else if (newMonitoringData.faceVisibility === 'partial') {
-      flagViolation('Partial face visibility', 'warning');
+    if (newMonitoringData.eyeTracking === 'alert' && newMonitoringData.faceCount > 0) {
+      if (currentTime % 6 === 0) {
+        flagViolation('Eyes not focused on screen - looking elsewhere', 'warning');
+      }
     }
 
-    // 3. Eye tracking violations - WARNING VIOLATIONS
-    if (newMonitoringData.eyeTracking === 'alert') {
-      flagViolation('Looking away from screen', 'warning');
-    } else if (newMonitoringData.eyeTracking === 'warning') {
-      flagViolation('Distracted behavior detected', 'warning');
+    if (newMonitoringData.faceVisibility === 'not_visible' && isPageVisible) {
+      if (currentTime % 8 === 0) {
+        flagViolation('Face not visible - candidate may have moved away', 'warning');
+      }
+    }
+
+    // Suspicious activity detection
+    if (suspiciousActivity > 5) {
+      if (currentTime % 15 === 0) {
+        flagViolation('Multiple suspicious activities detected', 'critical');
+      }
+    }
+
+    // Focus loss tracking
+    if (focusLossCount > 3) {
+      if (currentTime % 20 === 0) {
+        flagViolation(`Frequent tab switching detected (${focusLossCount} times)`, 'critical');
+      }
+    }
+
+    // Always update monitoring data
+    setMonitoringData(newMonitoringData);
+    setLastMonitoringUpdate(new Date().toLocaleTimeString());
+
+    // Enhanced logging with more context
+    if (currentTime % 3 === 0) { // More frequent logging
+      const tabStatus = !isPageVisible ? '🔴 HIDDEN' : '🟢 ACTIVE';
+      const typingStatus = isRecentlyTyping ? '⌨️ TYPING' : '⏸️ IDLE';
+      const suspiciousStatus = suspiciousActivity > 0 ? `🚨 SUS:${suspiciousActivity}` : '✅ CLEAN';
+
+      setSimulationLog(prev => [...prev,
+      `[${currentTime}s] ${tabStatus} ${typingStatus} ${suspiciousStatus} | 👁️${newMonitoringData.eyeTracking} 👤${newMonitoringData.faceCount} 📷${newMonitoringData.faceVisibility}`
+      ]);
+    }
+
+    // Tab switching violations
+    if (!isPageVisible && currentTime % 3 === 0) {
+      flagViolation('Tab switched away from interview', 'critical');
     }
   };
 
@@ -190,6 +308,36 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
         })
         .catch(err => console.log('Camera access denied:', err));
 
+      // Add page visibility and focus event listeners
+      const handleVisibilityChange = () => {
+        const isVisible = !document.hidden;
+        setIsPageVisible(isVisible);
+
+        if (!isVisible) {
+          flagViolation('Browser tab switched away from interview', 'critical');
+          setSimulationLog(prev => [...prev, `[${Math.floor((Date.now() - startTime) / 1000)}s] 🔴 Tab became inactive`]);
+        } else {
+          setSimulationLog(prev => [...prev, `[${Math.floor((Date.now() - startTime) / 1000)}s] 🟢 Tab became active`]);
+        }
+      };
+
+      const handleWindowBlur = () => {
+        setIsWindowFocused(false);
+        // Only flag as warning, don't affect main monitoring
+        if (isPageVisible) { // Only if tab is still visible
+          flagViolation('Window lost focus - possible distraction', 'warning');
+        }
+      };
+
+      const handleWindowFocus = () => {
+        setIsWindowFocused(true);
+        // Don't log every focus change to reduce noise
+      };
+
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      window.addEventListener('blur', handleWindowBlur);
+      window.addEventListener('focus', handleWindowFocus);
+
       // Timer
       const timer = setInterval(() => {
         setTimeLeft(prev => {
@@ -201,15 +349,25 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
         });
       }, 1000);
 
-      // Monitoring simulation
-      const monitoringTracker = setInterval(simulateMonitoring, 2000);
+      // Monitoring simulation - runs every 500ms for more responsive updates
+      const monitoringTracker = setInterval(simulateMonitoring, 500);
+
+      // Trigger specific violations based on selected profile (separate from monitoring data)
+      selectedProfile.simulatedViolations.forEach((violation) => {
+        setTimeout(() => {
+          flagViolation(violation.message, violation.type);
+        }, violation.timestamp * 1000);
+      });
 
       return () => {
         clearInterval(timer);
         clearInterval(monitoringTracker);
+        document.removeEventListener('visibilitychange', handleVisibilityChange);
+        window.removeEventListener('blur', handleWindowBlur);
+        window.removeEventListener('focus', handleWindowFocus);
       };
     }
-  }, [isStarted, isDisqualified]);
+  }, [isStarted, isDisqualified, selectedProfile]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -254,38 +412,38 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
   };
 
   const getFaceStatusText = () => {
-    if (monitoringData.faceCount === 0) return 'No Face Detected';
+    if (monitoringData.faceCount === 0) return '❌ No Face Detected';
     if (monitoringData.faceCount === 1) {
-      if (monitoringData.faceVisibility === 'complete') return 'Complete Face ✓';
-      if (monitoringData.faceVisibility === 'partial') return 'Partial Face (OK)';
-      return 'Face Not Visible';
+      if (monitoringData.faceVisibility === 'complete') return '✅ Complete Face';
+      if (monitoringData.faceVisibility === 'partial') return '⚠️ Partial Face';
+      return '❌ Face Not Visible';
     }
-    return `${monitoringData.faceCount} Faces Detected`;
+    return `🚨 ${monitoringData.faceCount} Faces Detected`;
   };
 
   if (showResults) {
     const { totalScore, maxScore } = calculateScore();
     const percentage = Math.round((totalScore / maxScore) * 100);
-    
+
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-600 via-teal-800 to-cyan-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-gray-600 via-gray-800 to-black flex items-center justify-center p-4">
         {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-10 -left-10 w-40 h-40 bg-emerald-500/20 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute top-1/2 -right-10 w-60 h-60 bg-teal-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-          <div className="absolute -bottom-10 left-1/2 w-80 h-80 bg-cyan-500/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
+          <div className="absolute -bottom-10 left-1/2 w-80 h-80 bg-gray-500/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
         </div>
 
         <div className="relative backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-8 max-w-4xl w-full shadow-2xl">
           <div className="text-center space-y-6">
             <div className="relative">
-              <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/50">
-                <Brain className="w-10 h-10 text-white" />
+              <div className="w-20 h-20 bg-gradient-to-br from-gray-500 to-gray-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-gray-500/50">
+                <img src="/brain-logo.png" alt="Brain" className="w-10 h-10 object-contain" />
               </div>
               <div className="absolute inset-0 w-20 h-20 bg-emerald-500/30 rounded-full blur-xl mx-auto animate-ping"></div>
             </div>
-            
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-300 to-cyan-300 bg-clip-text text-transparent">
+
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-300 to-white bg-clip-text text-transparent">
               Interview Complete
             </h1>
 
@@ -300,14 +458,14 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
                     {percentage}%
                   </div>
                 </div>
-                
+
                 <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6">
                   <p className="text-2xl font-semibold text-white mb-2">
                     Score: {totalScore}/{maxScore}
                   </p>
                   <p className="text-emerald-200">
-                    {percentage >= 70 ? '🚀 Outstanding coding skills!' : 
-                     percentage >= 50 ? '⭐ Good problem-solving ability!' : '📚 Keep practicing DSA!'}
+                    {percentage >= 70 ? '🚀 Outstanding coding skills!' :
+                      percentage >= 50 ? '⭐ Good problem-solving ability!' : '📚 Keep practicing DSA!'}
                   </p>
                 </div>
               </div>
@@ -319,7 +477,7 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
                     <Shield className="w-5 h-5" />
                     Proctoring Report
                   </h4>
-                  
+
                   <div className="space-y-4">
                     {/* Critical Violations */}
                     {criticalViolations.length > 0 && (
@@ -381,8 +539,8 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
               </div>
             </div>
 
-            <Button 
-              onClick={onBack} 
+            <Button
+              onClick={onBack}
               className="bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-500 hover:to-slate-600 text-white border-0 rounded-xl px-8 py-3 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -396,48 +554,48 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
 
   if (!isStarted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center p-4">
         {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-10 -left-10 w-40 h-40 bg-indigo-500/20 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute top-1/2 -right-10 w-60 h-60 bg-purple-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute -top-10 -left-10 w-40 h-40 bg-gray-500/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-1/2 -right-10 w-60 h-60 bg-gray-600/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
           <div className="absolute -bottom-10 left-1/2 w-80 h-80 bg-pink-500/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
         </div>
 
         <div className="relative backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-8 max-w-2xl w-full shadow-2xl">
           <div className="text-center space-y-6">
             <div className="relative">
-              <div className="w-20 h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-500/50">
+              <div className="w-20 h-20 bg-gradient-to-br from-gray-700 to-black rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-gray-500/50">
                 <Video className="w-10 h-10 text-white" />
               </div>
-              <div className="absolute inset-0 w-20 h-20 bg-indigo-500/30 rounded-full blur-xl mx-auto animate-ping"></div>
+              <div className="absolute inset-0 w-20 h-20 bg-gray-500/30 rounded-full blur-xl mx-auto animate-ping"></div>
             </div>
-            
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-300 to-pink-300 bg-clip-text text-transparent">
+
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-300 to-white bg-clip-text text-transparent">
               Live Proctored Interview
             </h1>
 
             <div className="space-y-6">
-              <div className="backdrop-blur-xl bg-indigo-500/10 border border-indigo-300/20 rounded-2xl p-6">
-                <h3 className="font-semibold text-indigo-300 mb-4 flex items-center justify-center gap-2">
+              <div className="backdrop-blur-xl bg-gray-500/10 border border-gray-300/20 rounded-2xl p-6">
+                <h3 className="font-semibold text-gray-300 mb-4 flex items-center justify-center gap-2">
                   <Zap className="w-5 h-5" />
                   System Requirements
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                  <div className="flex items-center gap-2 text-indigo-200/80">
-                    <div className="w-2 h-2 bg-indigo-400 rounded-full"></div>
+                  <div className="flex items-center gap-2 text-gray-200/80">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
                     Camera access required
                   </div>
-                  <div className="flex items-center gap-2 text-indigo-200/80">
-                    <div className="w-2 h-2 bg-indigo-400 rounded-full"></div>
+                  <div className="flex items-center gap-2 text-gray-200/80">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
                     Microphone access
                   </div>
-                  <div className="flex items-center gap-2 text-indigo-200/80">
-                    <div className="w-2 h-2 bg-indigo-400 rounded-full"></div>
+                  <div className="flex items-center gap-2 text-gray-200/80">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
                     Face detection monitoring
                   </div>
-                  <div className="flex items-center gap-2 text-indigo-200/80">
-                    <div className="w-2 h-2 bg-indigo-400 rounded-full"></div>
+                  <div className="flex items-center gap-2 text-gray-200/80">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
                     Duration: 45 minutes
                   </div>
                 </div>
@@ -470,18 +628,18 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex gap-4">
-              <Button 
-                onClick={handleBackClick} 
-                variant="outline" 
+              <Button
+                onClick={handleBackClick}
+                variant="outline"
                 className="flex-1 bg-white/5 border-white/20 text-white hover:bg-white/10 rounded-xl backdrop-blur-sm transition-all duration-300"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Dashboard
               </Button>
-              <Button 
-                onClick={() => setIsStarted(true)} 
+              <Button
+                onClick={() => setIsStarted(true)}
                 className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white border-0 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
               >
                 <Code2 className="w-4 h-4 mr-2" />
@@ -516,17 +674,17 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
                 <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
                 <span className="text-red-200 font-medium text-sm">LIVE INTERVIEW</span>
               </div>
-              
+
               <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full backdrop-blur-sm border border-white/10">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                 <span className="text-white/70 text-sm">Recording</span>
               </div>
-              
+
               <span className="text-white/60 text-sm">
                 Question {currentQuestion + 1} of {questions.length}
               </span>
             </div>
-            
+
             <div className="flex items-center space-x-6">
               <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full backdrop-blur-sm border border-white/10">
                 <Clock className="w-4 h-4 text-white/70" />
@@ -535,11 +693,10 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
                 </span>
               </div>
 
-              <div className={`px-4 py-2 rounded-full backdrop-blur-sm border ${
-                answeredCount === questions.length 
-                  ? 'bg-emerald-500/20 border-emerald-300/30 text-emerald-200' 
-                  : 'bg-white/5 border-white/10 text-white/70'
-              }`}>
+              <div className={`px-4 py-2 rounded-full backdrop-blur-sm border ${answeredCount === questions.length
+                ? 'bg-emerald-500/20 border-emerald-300/30 text-emerald-200'
+                : 'bg-white/5 border-white/10 text-white/70'
+                }`}>
                 <span className="font-medium">{answeredCount}/{questions.length} Solved</span>
               </div>
             </div>
@@ -564,6 +721,35 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
                   {micEnabled ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
                 </Button>
               </CardTitle>
+
+              {/* Profile Selection for Testing */}
+              <div className="mt-3">
+                <label className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                  Simulation Profile:
+                </label>
+                <select
+                  value={selectedProfile.id}
+                  onChange={(e) => {
+                    const profile = getMonitoringProfile(e.target.value);
+                    if (profile) {
+                      setSelectedProfile(profile);
+                      setSimulationLog([`Starting simulation: ${profile.description}`]);
+                      setIntegrityScore(100);
+                      // Reset violations
+                      setCriticalViolations([]);
+                      setWarningViolations([]);
+                      setViolations([]);
+                    }
+                  }}
+                  className="mt-1 block w-full text-sm border border-slate-300 dark:border-slate-600 rounded-md px-2 py-1 bg-white dark:bg-slate-700 dark:text-white"
+                >
+                  {monitoringProfiles.map((profile) => (
+                    <option key={profile.id} value={profile.id}>
+                      {profile.id.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="aspect-video bg-slate-900 rounded-lg overflow-hidden relative">
@@ -580,7 +766,7 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
                   </div>
                 </div>
               </div>
-              
+
               {/* Simplified Monitoring Display */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -589,10 +775,11 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
                     Eye Tracking
                   </span>
                   <Badge variant={
-                    monitoringData.eyeTracking === 'good' ? 'default' : 'secondary'
+                    monitoringData.eyeTracking === 'good' ? 'default' :
+                      monitoringData.eyeTracking === 'warning' ? 'secondary' : 'destructive'
                   }>
-                    {monitoringData.eyeTracking === 'good' ? 'Focused' : 
-                     monitoringData.eyeTracking === 'warning' ? 'Monitored' : 'Monitored'}
+                    {monitoringData.eyeTracking === 'good' ? '✓ Focused' :
+                      monitoringData.eyeTracking === 'warning' ? '⚠ Distracted' : '❌ Alert'}
                   </Badge>
                 </div>
 
@@ -624,15 +811,113 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
                   </div>
                 </div>
 
+                {/* Real-time Monitoring Status */}
+                <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-800 dark:text-gray-300">📊 Live Monitoring</span>
+                    <div className="flex items-center space-x-3">
+                      {/* Tab Status */}
+                      <div className="flex items-center space-x-1">
+                        <div className={`w-2 h-2 rounded-full animate-pulse ${!isPageVisible ? 'bg-red-400' : 'bg-green-400'
+                          }`}></div>
+                        <span className={`text-xs ${!isPageVisible ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'
+                          }`}>
+                          {!isPageVisible ? 'HIDDEN' : 'ACTIVE'}
+                        </span>
+                      </div>
+
+                      {/* Typing Status */}
+                      <div className="flex items-center space-x-1">
+                        <div className={`w-2 h-2 rounded-full ${isTyping ? 'bg-black dark:bg-white animate-pulse' : 'bg-gray-400'
+                          }`}></div>
+                        <span className={`text-xs ${isTyping ? 'text-black dark:text-white' : 'text-gray-500 dark:text-gray-400'
+                          }`}>
+                          {isTyping ? 'TYPING' : 'IDLE'}
+                        </span>
+                      </div>
+
+                      {/* Suspicious Activity Counter */}
+                      {suspiciousActivity > 0 && (
+                        <div className="flex items-center space-x-1">
+                          <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse"></div>
+                          <span className="text-xs text-orange-600 dark:text-orange-400">
+                            SUS: {suspiciousActivity}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-2 text-xs">
+                    <div className="text-center">
+                      <div className="font-medium text-slate-600 dark:text-slate-300">Faces</div>
+                      <div className={`font-bold text-lg ${monitoringData.faceCount === 1 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                        }`}>
+                        {monitoringData.faceCount}
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="font-medium text-slate-600 dark:text-slate-300">Visibility</div>
+                      <div className={`font-bold text-xs ${monitoringData.faceVisibility === 'complete' ? 'text-green-600 dark:text-green-400' :
+                        monitoringData.faceVisibility === 'partial' ? 'text-yellow-600 dark:text-yellow-400' :
+                          'text-red-600 dark:text-red-400'
+                        }`}>
+                        {monitoringData.faceVisibility === 'complete' ? '✅ Full' :
+                          monitoringData.faceVisibility === 'partial' ? '⚠️ Part' : '❌ None'}
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="font-medium text-slate-600 dark:text-slate-300">Focus</div>
+                      <div className={`font-bold text-xs ${monitoringData.eyeTracking === 'good' ? 'text-green-600 dark:text-green-400' :
+                        monitoringData.eyeTracking === 'warning' ? 'text-yellow-600 dark:text-yellow-400' :
+                          'text-red-600 dark:text-red-400'
+                        }`}>
+                        {monitoringData.eyeTracking === 'good' ? '🎯 Good' :
+                          monitoringData.eyeTracking === 'warning' ? '⚠️ Warn' : '🚨 Alert'}
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="font-medium text-slate-600 dark:text-slate-300">Activity</div>
+                      <div className={`font-bold text-xs ${isTyping ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'
+                        }`}>
+                        {isTyping ? '⌨️ Code' : '⏸️ Idle'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Real-time Stats */}
+                  <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-700">
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div className="text-center">
+                        <div className="text-slate-500 dark:text-slate-400">Tab Switches</div>
+                        <div className={`font-bold ${focusLossCount > 3 ? 'text-red-600' : 'text-slate-600'}`}>
+                          {focusLossCount}
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-slate-500 dark:text-slate-400">Last Update</div>
+                        <div className="font-mono text-slate-600 dark:text-slate-400">
+                          {lastMonitoringUpdate.split(':').slice(1).join(':')}
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-slate-500 dark:text-slate-400">Code Lines</div>
+                        <div className="font-bold text-slate-600 dark:text-slate-400">
+                          {(answers[currentQuestion] || '').split('\n').length}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Status indicator */}
-                <div className="bg-slate-50 p-3 rounded-lg">
+                <div className="bg-slate-50 dark:bg-slate-700 p-3 rounded-lg">
                   <div className="flex items-center space-x-2">
-                    <div className={`w-3 h-3 rounded-full ${
-                      monitoringData.faceCount === 1 && (monitoringData.faceVisibility === 'complete' || monitoringData.faceVisibility === 'partial')
-                        ? 'bg-green-500'
-                        : 'bg-red-500'
-                    }`}></div>
-                    <span className="text-sm font-medium">
+                    <div className={`w-3 h-3 rounded-full ${monitoringData.faceCount === 1 && (monitoringData.faceVisibility === 'complete' || monitoringData.faceVisibility === 'partial')
+                      ? 'bg-green-500 animate-pulse'
+                      : 'bg-red-500 animate-pulse'
+                      }`}></div>
+                    <span className="text-sm font-medium dark:text-white">
                       {monitoringData.faceCount === 1 && (monitoringData.faceVisibility === 'complete' || monitoringData.faceVisibility === 'partial')
                         ? 'Interview Status: ACTIVE'
                         : 'Interview Status: WARNING'
@@ -640,8 +925,46 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
                     </span>
                   </div>
                 </div>
+
+                {/* Integrity Score */}
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 p-3 rounded-lg border border-blue-200 dark:border-blue-700">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-blue-800 dark:text-blue-300">🔒 Integrity Score</span>
+                    <span className={`text-lg font-bold ${integrityScore > 70 ? 'text-green-600 dark:text-green-400' :
+                      integrityScore > 40 ? 'text-yellow-600 dark:text-yellow-400' :
+                        'text-red-600 dark:text-red-400'
+                      }`}>
+                      {integrityScore}%
+                    </span>
+                  </div>
+                  <div className="mt-1">
+                    <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full transition-all duration-300 ${integrityScore > 70 ? 'bg-green-500' :
+                          integrityScore > 40 ? 'bg-yellow-500' :
+                            'bg-red-500'
+                          }`}
+                        style={{ width: `${integrityScore}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Simulation Log */}
+                {simulationLog.length > 0 && (
+                  <div className="bg-slate-50 dark:bg-slate-700 p-3 rounded-lg">
+                    <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">📋 Simulation Log</h4>
+                    <div className="max-h-32 overflow-y-auto space-y-1">
+                      {simulationLog.slice(-5).map((log, index) => (
+                        <div key={index} className="text-xs font-mono text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 p-1 rounded">
+                          {log}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
-              
+
               <div className="space-y-3 border-t pt-3">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-medium">Screen Recording</label>
@@ -673,47 +996,216 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="bg-slate-900 rounded-lg p-4 mb-4">
-                <Textarea
-                  placeholder={`// ${currentQ.question}
-def solution():
-    # Write your solution here
-    # Expected approach: ${currentQ.expectedApproach}
-    
-    # Your code goes here
-    pass`}
-                  value={answers[currentQuestion] || ''}
-                  onChange={(e) => setAnswers(prev => ({ ...prev, [currentQuestion]: e.target.value }))}
-                  className="h-80 bg-transparent text-green-400 font-mono border-none resize-none focus:ring-0 text-sm"
-                />
+              {/* Question Details */}
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4 border border-blue-200 dark:border-blue-700">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">Problem Statement</h3>
+                    <p className="text-blue-700 dark:text-blue-400 mb-3">{currentQ.question}</p>
+                    <div className="text-sm text-blue-600 dark:text-blue-400">
+                      <strong>Expected Approach:</strong> {currentQ.expectedApproach}
+                    </div>
+                  </div>
+                  <div className="ml-4 text-right">
+                    <div className="text-sm text-slate-600 dark:text-slate-400">Points</div>
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{currentQ.points}</div>
+                  </div>
+                </div>
               </div>
-              
+
+              {/* Code Editor */}
+              <div className="bg-slate-900 rounded-lg overflow-hidden mb-4 border border-slate-700">
+                {/* Editor Header */}
+                <div className="bg-slate-800 px-4 py-2 flex items-center justify-between border-b border-slate-700">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span className="ml-3 text-slate-400 text-sm font-mono">solution.py</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-xs text-slate-400">
+                    <span>Lines: {(answers[currentQuestion] || '').split('\n').length}</span>
+                    <span>|</span>
+                    <span>Chars: {(answers[currentQuestion] || '').length}</span>
+                  </div>
+                </div>
+
+                {/* Code Area */}
+                <div className="flex">
+                  {/* Line Numbers */}
+                  <div className="bg-slate-800 px-3 py-4 text-slate-500 text-sm font-mono select-none border-r border-slate-700 min-w-[60px]">
+                    {Array.from({ length: Math.max(15, (answers[currentQuestion] || '').split('\n').length) }, (_, i) => (
+                      <div key={i} className="h-6 leading-6 text-right">
+                        {i + 1}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Code Editor */}
+                  <div className="flex-1 relative">
+                    <textarea
+                      placeholder={`# ${currentQ.question}
+# Expected approach: ${currentQ.expectedApproach}
+
+def solution():
+    """
+    Write your solution here
+    """
+    # Your code goes here
+    pass
+
+# Test your solution
+if __name__ == "__main__":
+    # Add test cases here
+    result = solution()
+    print(result)`}
+                      value={answers[currentQuestion] || ''}
+                      onChange={(e) => {
+                        setAnswers(prev => ({ ...prev, [currentQuestion]: e.target.value }));
+
+                        // Track typing activity for real-time monitoring
+                        setIsTyping(true);
+                        setLastTypingTime(Date.now());
+
+                        // Clear typing status after 2 seconds of inactivity
+                        setTimeout(() => setIsTyping(false), 2000);
+
+                        // Log significant coding milestones
+                        const codeLength = e.target.value.length;
+                        const currentTime = Math.floor((Date.now() - startTime) / 1000);
+
+                        if (codeLength > 0 && codeLength % 100 === 0) {
+                          setSimulationLog(prev => [...prev, `[${currentTime}s] 💻 ${codeLength} characters written`]);
+                        }
+
+                        if (e.target.value.includes('def ') && !answers[currentQuestion]?.includes('def ')) {
+                          setSimulationLog(prev => [...prev, `[${currentTime}s] 🔧 Function definition started`]);
+                        }
+
+                        if (e.target.value.includes('return') && !answers[currentQuestion]?.includes('return')) {
+                          setSimulationLog(prev => [...prev, `[${currentTime}s] ↩️ Return statement added`]);
+                        }
+                      }}
+                      className="w-full h-96 bg-transparent text-green-400 font-mono border-none resize-none focus:outline-none focus:ring-0 text-sm p-4"
+                      style={{
+                        lineHeight: '1.5',
+                        tabSize: 4,
+                        fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
+                        backgroundColor: 'transparent'
+                      }}
+                      spellCheck={false}
+                      autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="off"
+                    />
+                  </div>
+                </div>
+
+                {/* Code Stats */}
+                <div className="bg-slate-800 px-4 py-2 border-t border-slate-700">
+                  <div className="flex items-center justify-between text-xs text-slate-400">
+                    <div className="flex items-center space-x-4">
+                      <span>Python</span>
+                      <span>UTF-8</span>
+                      <span>Spaces: 4</span>
+                    </div>
+                    <div className="flex items-center space-x-4">
+                      {answers[currentQuestion] && answers[currentQuestion].length > 50 && (
+                        <span className="text-green-400">✓ Code written</span>
+                      )}
+                      {answers[currentQuestion] && answers[currentQuestion].includes('def ') && (
+                        <span className="text-blue-400">✓ Function defined</span>
+                      )}
+                      {answers[currentQuestion] && answers[currentQuestion].includes('return') && (
+                        <span className="text-purple-400">✓ Return statement</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress and Navigation */}
+              <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg mb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Question {currentQuestion + 1} of {questions.length}
+                  </span>
+                  <span className="text-sm text-slate-600 dark:text-slate-400">
+                    {Object.keys(answers).length} answered
+                  </span>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mb-3">
+                  <div
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${(Object.keys(answers).length / questions.length) * 100}%` }}
+                  ></div>
+                </div>
+
+                {/* Question Navigation */}
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {questions.map((q, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentQuestion(index)}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${index === currentQuestion
+                        ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
+                        : answers[index] && answers[index].length > 50
+                          ? 'bg-green-500 text-white hover:bg-green-600'
+                          : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
+                        }`}
+                      title={`${q.difficulty} - ${q.points} points`}
+                    >
+                      Q{index + 1}
+                      {answers[index] && answers[index].length > 50 && (
+                        <span className="ml-1">✓</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="flex items-center justify-between">
                 <Button
                   variant="outline"
                   onClick={() => setCurrentQuestion(prev => Math.max(0, prev - 1))}
                   disabled={currentQuestion === 0}
+                  className="flex items-center space-x-2"
                 >
-                  <ChevronLeft className="w-4 h-4 mr-2" />
-                  Previous
+                  <ChevronLeft className="w-4 h-4" />
+                  <span>Previous</span>
                 </Button>
 
-                <div className="flex items-center space-x-2">
-                  {questions.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setCurrentQuestion(index)}
-                      className={`w-8 h-8 rounded-full text-sm font-medium transition-colors ${
-                        index === currentQuestion
-                          ? 'bg-red-500 text-white'
-                          : answers[index]
-                          ? 'bg-green-500 text-white'
-                          : 'bg-slate-200 text-slate-600 hover:bg-slate-300'
-                      }`}
-                    >
-                      {index + 1}
-                    </button>
-                  ))}
+                <div className="flex items-center space-x-3">
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setAnswers(prev => ({ ...prev, [currentQuestion]: '' }));
+                      setSimulationLog(prev => [...prev, `[${Math.floor((Date.now() - startTime) / 1000)}s] 🗑️ Code cleared for Q${currentQuestion + 1}`]);
+                    }}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    Clear Code
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      const template = `def solution():
+    """
+    ${currentQ.question}
+    Expected approach: ${currentQ.expectedApproach}
+    """
+    # Write your solution here
+    pass`;
+                      setAnswers(prev => ({ ...prev, [currentQuestion]: template }));
+                      setSimulationLog(prev => [...prev, `[${Math.floor((Date.now() - startTime) / 1000)}s] 📝 Template loaded for Q${currentQuestion + 1}`]);
+                    }}
+                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                  >
+                    Load Template
+                  </Button>
                 </div>
 
                 {currentQuestion === questions.length - 1 ? (
@@ -744,7 +1236,7 @@ def solution():
             <AlertCircle className="w-4 h-4 mr-2" />
             Violations ({criticalViolations.length + warningViolations.length})
           </Button>
-          
+
           {showViolationsPanel && (
             <Card className="absolute bottom-12 right-0 w-80 max-h-96 bg-white shadow-xl border border-red-200">
               <CardHeader className="pb-3">
@@ -785,7 +1277,7 @@ def solution():
                         </div>
                       </div>
                     )}
-                    
+
                     {warningViolations.length > 0 && (
                       <div className="space-y-2">
                         <h4 className="font-semibold text-yellow-600 text-sm flex items-center gap-1">
@@ -821,19 +1313,19 @@ def solution():
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-slate-600 text-center">
-                You have answered {Object.keys(answers).length} questions. 
+                You have answered {Object.keys(answers).length} questions.
                 Are you sure you want to leave? Your progress will be lost.
               </p>
               <div className="flex space-x-3">
-                <Button 
-                  variant="outline" 
-                  onClick={handleCancelExit} 
+                <Button
+                  variant="outline"
+                  onClick={handleCancelExit}
                   className="flex-1"
                 >
                   Continue Interview
                 </Button>
-                <Button 
-                  onClick={handleConfirmExit} 
+                <Button
+                  onClick={handleConfirmExit}
                   className="flex-1 bg-red-500 hover:bg-red-600"
                 >
                   Leave Interview

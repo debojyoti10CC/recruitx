@@ -115,7 +115,7 @@ const TechnicalRound = ({ onComplete, onBack }: TechnicalRoundProps) => {
     const { correctAnswers, totalQuestions, percentage } = calculateScore();
     
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-black dark:to-gray-800 flex items-center justify-center">
         <Card className="w-full max-w-2xl mx-4">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">Technical Round Results</CardTitle>
@@ -147,18 +147,18 @@ const TechnicalRound = ({ onComplete, onBack }: TechnicalRoundProps) => {
 
   if (!isStarted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-900 dark:via-black dark:to-gray-800 flex items-center justify-center">
         <Card className="w-full max-w-2xl mx-4">
           <CardHeader className="text-center">
-            <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Code className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 bg-black dark:bg-white rounded-full flex items-center justify-center mx-auto mb-4">
+              <Code className="w-8 h-8 text-white dark:text-black" />
             </div>
             <CardTitle className="text-2xl">Technical Assessment</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="bg-purple-50 p-4 rounded-lg">
-              <h3 className="font-semibold text-purple-800 mb-2">Instructions:</h3>
-              <ul className="text-purple-700 text-sm space-y-1">
+            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+              <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Instructions:</h3>
+              <ul className="text-gray-700 dark:text-gray-300 text-sm space-y-1">
                 <li>• Total time: 60 minutes</li>
                 <li>• 25 questions covering DSA, Aptitude, and Quantitative topics</li>
                 <li>• Minimum 60% required to advance to next round</li>
@@ -313,7 +313,7 @@ const TechnicalRound = ({ onComplete, onBack }: TechnicalRoundProps) => {
                   onClick={() => setCurrentQuestion(index)}
                   className={`px-3 py-1 rounded-full text-sm font-medium transition-colors border border-gray-700
                     ${index === currentQuestion
-                      ? 'bg-purple-600 text-white'
+                      ? 'bg-black dark:bg-white text-white dark:text-black'
                       : skippedQuestions.has(index)
                       ? 'bg-orange-500 text-white'
                       : answers[index]
@@ -335,7 +335,7 @@ const TechnicalRound = ({ onComplete, onBack }: TechnicalRoundProps) => {
               ) : (
                 <Button
                   onClick={() => setCurrentQuestion(prev => Math.min(questions.length - 1, prev + 1))}
-                  className="bg-purple-600 hover:bg-purple-700 text-white px-8"
+                  className="bg-black dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-black px-8"
                 >
                   Next
                   <ChevronRight className="w-4 h-4 ml-2" />

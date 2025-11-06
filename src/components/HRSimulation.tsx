@@ -35,18 +35,48 @@ const HRSimulation = ({ onComplete, onBack, candidateInfo, role }: HRSimulationP
   const typingStartTime = useRef<number>(0);
   const responseStartLength = useRef<number>(0);
 
-  const questions = [
-    "Tell me about yourself and why you're interested in this position.",
-    "Describe a challenging situation you faced and how you overcame it.",
-    "Where do you see yourself in five years?",
-    "What are your greatest strengths and weaknesses?",
-    "Why should we hire you over other candidates?",
-    "Describe a time when you had to work in a team to achieve a goal.",
-    "How do you handle stress and pressure?",
-    "What motivates you in your work?",
-    "Tell me about a time you failed and what you learned from it.",
-    "How do you stay updated with industry trends and technologies?"
-  ];
+  // Multilingual HR questions for cross-lingual comprehension testing
+  const hrQuestions = {
+    en: [
+      "Tell me about yourself and why you're interested in this position.",
+      "Describe a challenging situation you faced and how you overcame it.",
+      "Where do you see yourself in five years?",
+      "What are your greatest strengths and weaknesses?",
+      "Why should we hire you over other candidates?",
+      "Describe a time when you had to work in a team to achieve a goal.",
+      "How do you handle stress and pressure?",
+      "What motivates you in your work?",
+      "Tell me about a time you failed and what you learned from it.",
+      "How do you stay updated with industry trends and technologies?"
+    ],
+    hi: [
+      "अपने बारे में बताएं और इस पद में आपकी रुचि क्यों है।",
+      "किसी चुनौतीपूर्ण स्थिति के बारे में बताएं जिसका आपने सामना किया और उसे कैसे पार किया।",
+      "आप खुद को पांच साल बाद कहां देखते हैं?",
+      "आपकी सबसे बड़ी ताकत और कमजोरियां क्या हैं?",
+      "हमें आपको अन्य उम्मीदवारों के बजाय क्यों चुनना चाहिए?",
+      "किसी समय के बारे में बताएं जब आपको लक्ष्य हासिल करने के लिए टीम में काम करना पड़ा।",
+      "आप तनाव और दबाव को कैसे संभालते हैं?",
+      "आपके काम में आपको क्या प्रेरणा देता है?",
+      "किसी असफलता के बारे में बताएं और आपने उससे क्या सीखा।",
+      "आप उद्योग के रुझानों और तकनीकों के साथ कैसे अपडेट रहते हैं?"
+    ],
+    es: [
+      "Háblame de ti y por qué te interesa este puesto.",
+      "Describe una situación desafiante que enfrentaste y cómo la superaste.",
+      "¿Dónde te ves en cinco años?",
+      "¿Cuáles son tus mayores fortalezas y debilidades?",
+      "¿Por qué deberíamos contratarte en lugar de otros candidatos?",
+      "Describe una ocasión en la que tuviste que trabajar en equipo para lograr un objetivo.",
+      "¿Cómo manejas el estrés y la presión?",
+      "¿Qué te motiva en tu trabajo?",
+      "Háblame de una vez que fallaste y qué aprendiste de ello.",
+      "¿Cómo te mantienes actualizado con las tendencias y tecnologías de la industria?"
+    ]
+  };
+
+  const [selectedLanguage, setSelectedLanguage] = useState<keyof typeof hrQuestions>('en');
+  const questions = hrQuestions[selectedLanguage];
 
   useEffect(() => {
     if (!isStarted) return;
@@ -266,6 +296,20 @@ const HRSimulation = ({ onComplete, onBack, candidateInfo, role }: HRSimulationP
               <span className="text-sm text-slate-600 dark:text-slate-300">
                 Question {currentQuestion + 1} of {questions.length}
               </span>
+              
+              {/* Language Selector */}
+              <div className="flex items-center space-x-2">
+                <span className="text-xs text-slate-500 dark:text-slate-400">Language:</span>
+                <select
+                  value={selectedLanguage}
+                  onChange={(e) => setSelectedLanguage(e.target.value as keyof typeof hrQuestions)}
+                  className="text-xs border border-slate-300 dark:border-slate-600 rounded px-2 py-1 bg-white dark:bg-slate-700 dark:text-white"
+                >
+                  <option value="en">English</option>
+                  <option value="hi">हिंदी</option>
+                  <option value="es">Español</option>
+                </select>
+              </div>
             </div>
             
             <div className="flex items-center space-x-6">

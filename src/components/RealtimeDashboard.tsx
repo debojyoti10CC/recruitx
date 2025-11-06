@@ -86,7 +86,7 @@ const RealtimeDashboard = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-green-500';
-      case 'completed': return 'bg-blue-500';
+      case 'completed': return 'bg-gray-600';
       case 'paused': return 'bg-yellow-500';
       default: return 'bg-gray-500';
     }
@@ -154,8 +154,8 @@ const RealtimeDashboard = () => {
                       <span className="text-green-600">Camera ON</span>
                     </div>
                     <div className="flex items-center space-x-1">
-                      <Mic className="w-4 h-4 text-blue-600" />
-                      <span className="text-blue-600">Audio ON</span>
+                      <Mic className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                      <span className="text-gray-600 dark:text-gray-400">Audio ON</span>
                     </div>
                   </div>
 
@@ -197,12 +197,12 @@ const RealtimeDashboard = () => {
                   </div>
 
                   {/* Overall Score */}
-                  <div className="bg-gradient-to-r from-purple-50 to-indigo-50 p-3 rounded-lg border border-purple-200">
+                  <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-purple-800">Overall Score</span>
+                      <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Overall Score</span>
                       <div className="flex items-center space-x-1">
-                        <TrendingUp className="w-4 h-4 text-purple-600" />
-                        <span className="font-bold text-purple-800">
+                        <TrendingUp className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        <span className="font-bold text-gray-800 dark:text-gray-200">
                           {((candidate.confidence + candidate.clarity + candidate.relevance) / 3).toFixed(0)}%
                         </span>
                       </div>
@@ -228,11 +228,11 @@ const RealtimeDashboard = () => {
                       <span className="text-sm text-slate-600 ml-1">Active</span>
                     </div>
                     <div>
-                      <span className="text-blue-600 font-bold">{stats.completed}</span>
+                      <span className="text-gray-800 dark:text-gray-200 font-bold">{stats.completed}</span>
                       <span className="text-sm text-slate-600 ml-1">Completed</span>
                     </div>
                     <div>
-                      <span className="text-purple-600 font-bold">{stats.avgScore}%</span>
+                      <span className="text-gray-800 dark:text-gray-200 font-bold">{stats.avgScore}%</span>
                       <span className="text-sm text-slate-600 ml-1">Avg Score</span>
                     </div>
                     <div>
@@ -258,7 +258,7 @@ const RealtimeDashboard = () => {
             
             <Card>
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold text-gray-800 dark:text-gray-200">
                   {candidates.filter(c => c.status === 'completed').length}
                 </div>
                 <div className="text-sm text-slate-600">Completed</div>
@@ -267,7 +267,7 @@ const RealtimeDashboard = () => {
             
             <Card>
               <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-purple-600">
+                <div className="text-2xl font-bold text-gray-800 dark:text-gray-200">
                   {candidates.length > 0 ? 
                     Math.round(candidates.reduce((acc, c) => acc + ((c.confidence + c.clarity + c.relevance) / 3), 0) / candidates.length) :
                     0
@@ -292,7 +292,7 @@ const RealtimeDashboard = () => {
 
           <div className="flex justify-center">
             <button
-              className="bg-indigo-600 text-white px-6 py-3 rounded-lg"
+              className="bg-black dark:bg-white text-white dark:text-black px-6 py-3 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100"
               onClick={() => setShowLiveInterview(true)}
             >
               Start Live Interview

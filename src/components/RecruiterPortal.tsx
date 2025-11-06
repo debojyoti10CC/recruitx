@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Users, Settings, BarChart3, Eye, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { RecruiterStatsPin } from '@/components/ui/recruiter-stats-pin';
+import { ArrowLeft, Users, Settings, BarChart3, Eye, CheckCircle, Clock, AlertTriangle, TrendingUp, UserCheck } from 'lucide-react';
 
 interface RecruiterPortalProps {
   onBack: () => void;
@@ -59,7 +60,7 @@ const RecruiterPortal = ({ onBack }: RecruiterPortalProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-black">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4">
@@ -125,15 +126,15 @@ const RecruiterPortal = ({ onBack }: RecruiterPortalProps) => {
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         {/* Round 1 */}
-                        <div className="bg-blue-50 p-4 rounded-lg">
+                        <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                           <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-semibold text-blue-800">Technical Round</h4>
+                            <h4 className="font-semibold text-gray-800 dark:text-gray-200">Technical Round</h4>
                             {getStatusBadge(candidate.round1.status)}
                           </div>
                           {candidate.round1.score && (
                             <div>
-                              <div className="text-xl font-bold text-blue-600">{candidate.round1.score}%</div>
-                              <p className="text-sm text-blue-700">Time: {candidate.round1.time}</p>
+                              <div className="text-xl font-bold text-gray-800 dark:text-gray-200">{candidate.round1.score}%</div>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">Time: {candidate.round1.time}</p>
                             </div>
                           )}
                         </div>
@@ -159,15 +160,15 @@ const RecruiterPortal = ({ onBack }: RecruiterPortalProps) => {
                         </div>
 
                         {/* Round 3 */}
-                        <div className="bg-purple-50 p-4 rounded-lg">
+                        <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
                           <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-semibold text-purple-800">HR Simulation</h4>
+                            <h4 className="font-semibold text-gray-800 dark:text-gray-200">HR Simulation</h4>
                             {getStatusBadge(candidate.round3.status)}
                           </div>
                           {candidate.round3.score && (
                             <div>
-                              <div className="text-xl font-bold text-purple-600">{candidate.round3.score}%</div>
-                              <p className="text-sm text-purple-700">Time: {candidate.round3.time}</p>
+                              <div className="text-xl font-bold text-gray-800 dark:text-gray-200">{candidate.round3.score}%</div>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">Time: {candidate.round3.time}</p>
                             </div>
                           )}
                         </div>
@@ -189,44 +190,44 @@ const RecruiterPortal = ({ onBack }: RecruiterPortalProps) => {
               </div>
             </TabsContent>
 
-            {/* Analytics Tab */}
+            {/* Analytics Tab - 3D Pin Stats */}
             <TabsContent value="analytics" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-blue-600">147</div>
-                      <p className="text-slate-600">Total Candidates</p>
-                    </div>
-                  </CardContent>
-                </Card>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <RecruiterStatsPin
+                  title="Total Candidates"
+                  value={147}
+                  description="All registered candidates"
+                  icon={Users}
+                  color="bg-gray-600"
+                  trend={{ value: 12, isPositive: true }}
+                />
                 
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-green-600">89</div>
-                      <p className="text-slate-600">Completed</p>
-                    </div>
-                  </CardContent>
-                </Card>
+                <RecruiterStatsPin
+                  title="Completed"
+                  value={89}
+                  description="Finished all rounds"
+                  icon={CheckCircle}
+                  color="bg-green-600"
+                  trend={{ value: 8, isPositive: true }}
+                />
                 
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-yellow-600">23</div>
-                      <p className="text-slate-600">In Progress</p>
-                    </div>
-                  </CardContent>
-                </Card>
+                <RecruiterStatsPin
+                  title="In Progress"
+                  value={23}
+                  description="Currently taking tests"
+                  icon={Clock}
+                  color="bg-yellow-600"
+                  trend={{ value: 3, isPositive: false }}
+                />
                 
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-slate-600">76%</div>
-                      <p className="text-slate-600">Pass Rate</p>
-                    </div>
-                  </CardContent>
-                </Card>
+                <RecruiterStatsPin
+                  title="Pass Rate"
+                  value="76%"
+                  description="Overall success rate"
+                  icon={TrendingUp}
+                  color="bg-gray-700"
+                  trend={{ value: 5, isPositive: true }}
+                />
               </div>
 
               <Card>

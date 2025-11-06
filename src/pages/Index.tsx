@@ -2,11 +2,18 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, Brain, Shield, CheckCircle, ArrowRight, Code, Video, MessageSquare, Star, Quote, Sparkles, Zap, Globe, Lock } from 'lucide-react';
+import { BackgroundGradient } from '@/components/ui/background-gradient';
+import { Users, Shield, CheckCircle, ArrowRight, Code, Video, MessageSquare, Star, Quote, Sparkles, Zap, Globe, Lock } from 'lucide-react';
+import { FeatureDotCard } from '@/components/ui/feature-dot-card';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import CandidatePortal from '@/components/CandidatePortal';
 import RecruiterPortal from '@/components/RecruiterPortal';
 import BiometricAuth from '@/components/BiometricAuth';
+import { HeroScrollDemo } from '@/components/HeroScrollDemo';
+import { TimelineDemo } from '@/components/TimelineDemo';
+import { TestimonialsSection } from '@/components/TestimonialsSection';
+import { Footer } from '@/components/ui/modem-animated-footer';
+import { Twitter, Linkedin, Github, Mail, Brain } from 'lucide-react';
 import { User } from 'firebase/auth';
 
 const Index = () => {
@@ -53,28 +60,28 @@ const Index = () => {
     return (
       <div className="min-h-screen relative overflow-hidden">
         {/* Animated Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-900 via-purple-900 to-indigo-900">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-400/20 via-transparent to-transparent"></div>
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-blue-400/20 via-transparent to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-800">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-gray-400/20 via-transparent to-transparent"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-gray-500/20 via-transparent to-transparent"></div>
         </div>
         
         {/* Floating Elements */}
-        <div className="absolute top-20 left-10 w-20 h-20 bg-gradient-to-r from-cyan-400/20 to-blue-400/20 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-32 right-16 w-32 h-32 bg-gradient-to-r from-purple-400/20 to-pink-400/20 rounded-full blur-xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-gradient-to-r from-emerald-400/20 to-teal-400/20 rounded-full blur-xl animate-pulse delay-500"></div>
+        <div className="absolute top-20 left-10 w-20 h-20 bg-gradient-to-r from-gray-400/20 to-gray-500/20 rounded-full blur-xl animate-pulse"></div>
+        <div className="absolute bottom-32 right-16 w-32 h-32 bg-gradient-to-r from-gray-600/20 to-gray-400/20 rounded-full blur-xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/4 w-16 h-16 bg-gradient-to-r from-gray-500/20 to-gray-600/20 rounded-full blur-xl animate-pulse delay-500"></div>
         
         <div className="relative z-10 min-h-screen flex items-center justify-center p-4">
           <div className="w-full max-w-md">
             {/* Glassmorphism Card */}
             <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-gray-600 to-black rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
               <Card className="relative backdrop-blur-xl bg-white/10 dark:bg-black/20 border border-white/20 dark:border-white/10 rounded-2xl shadow-2xl">
                 <CardHeader className="text-center pb-6">
                   <div className="relative mx-auto mb-6">
-                    <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-2xl flex items-center justify-center shadow-2xl shadow-purple-500/25">
+                    <div className="w-20 h-20 bg-gradient-to-r from-gray-700 to-black rounded-2xl flex items-center justify-center shadow-2xl shadow-gray-500/25">
                       <Shield className="w-10 h-10 text-white" />
                     </div>
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full flex items-center justify-center">
+                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-gray-400 to-gray-600 rounded-full flex items-center justify-center">
                       <Lock className="w-3 h-3 text-white" />
                     </div>
                   </div>
@@ -97,7 +104,7 @@ const Index = () => {
                         value={adminCredentials.id}
                         onChange={(e) => setAdminCredentials(prev => ({ ...prev, id: e.target.value }))}
                         placeholder="Enter admin ID"
-                        className="w-full p-4 backdrop-blur-sm bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
+                        className="w-full p-4 backdrop-blur-sm bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-300"
                       />
                     </div>
                     <div className="relative">
@@ -110,7 +117,7 @@ const Index = () => {
                         value={adminCredentials.password}
                         onChange={(e) => setAdminCredentials(prev => ({ ...prev, password: e.target.value }))}
                         placeholder="Enter password"
-                        className="w-full p-4 backdrop-blur-sm bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-300"
+                        className="w-full p-4 backdrop-blur-sm bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-300"
                       />
                     </div>
                   </div>
@@ -131,7 +138,7 @@ const Index = () => {
                     </Button>
                     <Button 
                       onClick={handleAdminLogin}
-                      className="flex-1 bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white border-0 rounded-xl h-12 shadow-xl shadow-purple-500/25"
+                      className="flex-1 bg-gradient-to-r from-gray-700 to-black hover:from-gray-800 hover:to-gray-900 text-white border-0 rounded-xl h-12 shadow-xl shadow-gray-500/25"
                     >
                       <Lock className="w-4 h-4 mr-2" />
                       Access
@@ -146,274 +153,212 @@ const Index = () => {
     );
   }
 
-  const testimonials = [
-    {
-      name: "Sarah Johnson",
-      role: "HR Director at TechCorp",
-      content: "Recruitix transformed our hiring process. The AI-powered insights helped us identify top talent 3x faster.",
-      rating: 5
-    },
-    {
-      name: "Michael Chen",
-      role: "Software Engineer",
-      content: "The assessment was comprehensive yet fair. I appreciated the real-time feedback and the variety of question types.",
-      rating: 5
-    },
-    {
-      name: "Emily Rodriguez",
-      role: "Talent Acquisition Lead",
-      content: "The live proctoring and detailed analytics give us confidence in our hiring decisions. Highly recommended!",
-      rating: 5
-    }
-  ];
+
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Advanced Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-purple-400/30 via-transparent to-transparent"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-blue-400/30 via-transparent to-transparent"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-400/20 via-transparent to-transparent"></div>
-      </div>
-      
-      {/* Floating Orbs */}
-      <div className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-r from-cyan-400/30 to-blue-400/30 rounded-full blur-3xl animate-pulse"></div>
-      <div className="absolute bottom-40 right-32 w-40 h-40 bg-gradient-to-r from-purple-400/30 to-pink-400/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      <div className="absolute top-1/3 right-20 w-24 h-24 bg-gradient-to-r from-emerald-400/30 to-teal-400/30 rounded-full blur-3xl animate-pulse delay-500"></div>
-      <div className="absolute bottom-20 left-40 w-36 h-36 bg-gradient-to-r from-orange-400/20 to-red-400/20 rounded-full blur-3xl animate-pulse delay-700"></div>
-
+    <div className="min-h-screen bg-white dark:bg-black">
       {/* Header */}
-      <header className="relative z-10 backdrop-blur-xl bg-white/5 border-b border-white/10 sticky top-0">
-        <div className="container mx-auto px-6 py-6">
+      <header className="sticky top-0 z-50 bg-white/80 dark:bg-black/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-800/50">
+        <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <div className="w-12 h-12 bg-gradient-to-r from-cyan-400 to-purple-500 rounded-2xl flex items-center justify-center shadow-2xl shadow-cyan-500/25">
-                  <Brain className="w-7 h-7 text-white" />
-                </div>
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full animate-pulse"></div>
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center">
+                <img 
+                  src="/brain-logo.png" 
+                  alt="Recruitix Brain Logo" 
+                  className="w-10 h-10 object-contain"
+                />
               </div>
               <div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+                <span className="text-xl font-bold text-black dark:text-white">
                   Recruitix
                 </span>
-                <div className="flex items-center space-x-2">
-                  <Sparkles className="w-3 h-3 text-purple-400" />
-                  <span className="text-xs text-purple-300">AI-Powered</span>
+                <div className="flex items-center space-x-1">
+                  <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">AI-Powered</span>
                 </div>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <ThemeToggle />
-              <Badge className="bg-gradient-to-r from-purple-500/20 to-indigo-500/20 text-purple-200 border-purple-400/30 backdrop-blur-sm">
+              <Badge className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700">
                 <Zap className="w-3 h-3 mr-1" />
-                Beta v2.0
+                v2.0
               </Badge>
             </div>
           </div>
         </div>
       </header>
 
+      {/* Hero Scroll Animation */}
+      <HeroScrollDemo />
+
       {/* Hero Section */}
-      <section className="relative z-10 container mx-auto px-6 py-20">
+      <section className="container mx-auto px-6 py-20">
         <div className="text-center max-w-6xl mx-auto">
-          <div className="relative mb-8">
-            <h1 className="text-6xl md:text-8xl font-bold bg-gradient-to-r from-white via-purple-200 to-cyan-200 bg-clip-text text-transparent mb-6 leading-tight">
-              AI-Powered
+          <div className="mb-12">
+            <h1 className="text-5xl md:text-7xl font-bold text-black dark:text-white mb-6 leading-tight tracking-tight">
+              Smart Hiring with
               <br />
-              <span className="bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                Interview System
+              <span className="bg-gradient-to-r from-gray-800 to-black dark:from-gray-200 dark:to-white bg-clip-text text-transparent font-serif italic">
+                AI Intelligence
               </span>
             </h1>
-            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-20 h-1 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-full"></div>
           </div>
           
-          <p className="text-2xl md:text-3xl text-purple-200 mb-4 font-semibold">
-            Smart. Fair. Scalable Hiring.
+          <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-6 font-medium">
+            Transform recruitment with intelligent assessments and real-time insights
           </p>
-          <p className="text-lg text-gray-300/80 mb-16 max-w-3xl mx-auto leading-relaxed">
-            Transform your recruitment process with AI-driven assessments, real-time proctoring, 
-            and intelligent candidate evaluation for modern hiring needs.
+          <p className="text-lg text-gray-500 dark:text-gray-400 mb-16 max-w-3xl mx-auto leading-relaxed">
+            Streamline your hiring process with AI-powered evaluations, live proctoring, 
+            and comprehensive candidate analysis designed for modern recruitment needs.
           </p>
 
-          {/* Enhanced Login Options */}
+          {/* Login Options */}
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-20">
             {/* Candidate Portal Card */}
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-600 to-cyan-600 rounded-3xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
-              <Card className="relative backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl group-hover:shadow-emerald-500/25 transition-all duration-500 transform group-hover:-translate-y-2">
-                <CardHeader className="text-center pb-6">
-                  <div className="relative mx-auto mb-6">
-                    <div className="w-20 h-20 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-2xl shadow-emerald-500/25 group-hover:scale-110 transition-transform duration-500">
-                      <Users className="w-10 h-10 text-white" />
-                    </div>
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full flex items-center justify-center animate-pulse">
-                      <Sparkles className="w-3 h-3 text-white" />
-                    </div>
+            <Card className="group hover:shadow-xl transition-all duration-300 border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:-translate-y-1">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 bg-black dark:bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <Users className="w-8 h-8 text-white dark:text-black" />
+                </div>
+                <h3 className="text-2xl font-bold text-black dark:text-white mb-2">Candidate Portal</h3>
+                <p className="text-gray-600 dark:text-gray-400 text-base mb-6">
+                  Take your assessment and showcase your skills
+                </p>
+                
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 mb-6">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">Assessment Duration</span>
+                    <span className="text-black dark:text-white font-semibold">90 minutes</span>
                   </div>
-                  <CardTitle className="text-3xl font-bold text-white mb-2">Candidate Portal</CardTitle>
-                  <CardDescription className="text-gray-300/80 text-lg">
-                    Take your assessment and showcase your skills
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4 px-8 pb-8">
-                  <div className="bg-white/5 rounded-2xl p-4 backdrop-blur-sm border border-white/10">
-                    <div className="flex items-center justify-between text-sm text-gray-300">
-                      <span>Assessment Duration</span>
-                      <span className="text-emerald-400 font-semibold">90 minutes</span>
-                    </div>
-                  </div>
-                  <Button 
-                    className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white font-semibold py-4 rounded-2xl shadow-2xl shadow-emerald-500/25 group-hover:shadow-emerald-500/40 transition-all duration-500 text-lg"
-                    onClick={() => setShowAuth(true)}
-                  >
-                    <Sparkles className="w-5 h-5 mr-2" />
-                    Start Assessment
-                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+                
+                <Button 
+                  className="w-full bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-100 font-semibold py-3 rounded-xl transition-all duration-300"
+                  onClick={() => setShowAuth(true)}
+                >
+                  Start Assessment
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </CardContent>
+            </Card>
 
             {/* Recruiter Portal Card */}
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-3xl blur opacity-25 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
-              <Card className="relative backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl group-hover:shadow-purple-500/25 transition-all duration-500 transform group-hover:-translate-y-2">
-                <CardHeader className="text-center pb-6">
-                  <div className="relative mx-auto mb-6">
-                    <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-2xl flex items-center justify-center shadow-2xl shadow-purple-500/25 group-hover:scale-110 transition-transform duration-500">
-                      <Shield className="w-10 h-10 text-white" />
-                    </div>
-                    <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-pink-400 to-rose-400 rounded-full flex items-center justify-center animate-pulse">
-                      <Lock className="w-3 h-3 text-white" />
-                    </div>
+            <Card className="group hover:shadow-xl transition-all duration-300 border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:-translate-y-1">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 bg-black dark:bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                  <Shield className="w-8 h-8 text-white dark:text-black" />
+                </div>
+                <h3 className="text-2xl font-bold text-black dark:text-white mb-2">Recruiter Dashboard</h3>
+                <p className="text-gray-600 dark:text-gray-400 text-base mb-6">
+                  Manage assessments and evaluate candidates
+                </p>
+                
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700 mb-6">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600 dark:text-gray-400">Security Level</span>
+                    <span className="text-black dark:text-white font-semibold">Enterprise</span>
                   </div>
-                  <CardTitle className="text-3xl font-bold text-white mb-2">Recruiter Dashboard</CardTitle>
-                  <CardDescription className="text-gray-300/80 text-lg">
-                    Manage assessments and evaluate candidates
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4 px-8 pb-8">
-                  <div className="bg-white/5 rounded-2xl p-4 backdrop-blur-sm border border-white/10">
-                    <div className="flex items-center justify-between text-sm text-gray-300">
-                      <span>Security Level</span>
-                      <span className="text-purple-400 font-semibold">Enterprise</span>
-                    </div>
-                  </div>
-                  <Button 
-                    className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-600 hover:to-indigo-600 text-white font-semibold py-4 rounded-2xl shadow-2xl shadow-purple-500/25 group-hover:shadow-purple-500/40 transition-all duration-500 text-lg"
-                    onClick={handleRecruiterAccess}
-                  >
-                    <Shield className="w-5 h-5 mr-2" />
-                    Access Dashboard
-                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-300" />
-                  </Button>
-                  <p className="text-xs text-gray-400/80 text-center backdrop-blur-sm bg-white/5 rounded-xl py-2 px-3">
-                    Admin credentials required (ID: admin, Password: admin@123)
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+                
+                <Button 
+                  className="w-full bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-100 font-semibold py-3 rounded-xl transition-all duration-300"
+                  onClick={handleRecruiterAccess}
+                >
+                  Access Dashboard
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+                
+                <p className="text-xs text-gray-500 dark:text-gray-400 text-center bg-gray-50 dark:bg-gray-800 rounded-lg py-2 px-3 mt-4">
+                  Admin credentials: admin / admin@123
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Enhanced Features Preview */}
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-20">
-            <div className="relative group">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl blur opacity-20 group-hover:opacity-60 transition duration-1000"></div>
-              <div className="relative backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-8 group-hover:-translate-y-1 transition-all duration-300">
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-500/25">
-                  <Code className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3">Technical Assessment</h3>
-                <p className="text-gray-300/80">25 questions with role-specific customization and real-time code execution</p>
-                <div className="mt-4 flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                  <span className="text-xs text-blue-300">Live Code Analysis</span>
-                </div>
-              </div>
-            </div>
+          {/* Features Preview - Interactive Dot Cards */}
+          <div className="grid md:grid-cols-3 gap-12 max-w-6xl mx-auto mb-20">
+            <FeatureDotCard
+              title="Technical Assessment"
+              description="25 questions with role-specific customization and real-time code execution"
+              icon={Code}
+              target={25}
+              label="Questions"
+            />
             
-            <div className="relative group">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-red-600 to-pink-600 rounded-2xl blur opacity-20 group-hover:opacity-60 transition duration-1000"></div>
-              <div className="relative backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-8 group-hover:-translate-y-1 transition-all duration-300">
-                <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-red-500/25">
-                  <Video className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3">Live Interview</h3>
-                <p className="text-gray-300/80">10 coding problems with AI-powered monitoring and behavior analysis</p>
-                <div className="mt-4 flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
-                  <span className="text-xs text-red-300">Real-time Proctoring</span>
-                </div>
-              </div>
-            </div>
+            <FeatureDotCard
+              title="Live Interview"
+              description="10 coding problems with AI-powered monitoring and behavior analysis"
+              icon={Video}
+              target={90}
+              label="Minutes"
+            />
             
-            <div className="relative group">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl blur opacity-20 group-hover:opacity-60 transition duration-1000"></div>
-              <div className="relative backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-8 group-hover:-translate-y-1 transition-all duration-300">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-purple-500/25">
-                  <MessageSquare className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3">HR Simulation</h3>
-                <p className="text-gray-300/80">10 behavioral questions with advanced AI sentiment and personality analysis</p>
-                <div className="mt-4 flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-                  <span className="text-xs text-purple-300">AI Psychology Insights</span>
-                </div>
-              </div>
-            </div>
+            <FeatureDotCard
+              title="HR Simulation"
+              description="10 behavioral questions with advanced AI sentiment and personality analysis"
+              icon={MessageSquare}
+              target={10}
+              label="Scenarios"
+            />
           </div>
 
-          {/* Enhanced Customer Reviews */}
-          <div className="mb-16">
-            <h2 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-12">
-              What Our Users Say
-            </h2>
-            <div className="grid md:grid-cols-3 gap-8">
-              {testimonials.map((testimonial, index) => (
-                <div key={index} className="relative group">
-                  <div className="absolute -inset-0.5 bg-gradient-to-r from-yellow-600 to-orange-600 rounded-2xl blur opacity-20 group-hover:opacity-50 transition duration-1000"></div>
-                  <Card className="relative backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl group-hover:-translate-y-1 transition-all duration-300">
-                    <CardContent className="p-8">
-                      <div className="flex mb-6">
-                        {[...Array(testimonial.rating)].map((_, i) => (
-                          <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                        ))}
-                      </div>
-                      <div className="relative mb-6">
-                        <Quote className="w-8 h-8 text-purple-400/50 absolute -top-2 -left-2" />
-                        <p className="text-gray-300/90 leading-relaxed pl-6">{testimonial.content}</p>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-center">
-                          <span className="text-white font-bold">{testimonial.name.charAt(0)}</span>
-                        </div>
-                        <div>
-                          <p className="font-semibold text-white">{testimonial.name}</p>
-                          <p className="text-sm text-gray-400">{testimonial.role}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* Timeline Section */}
+          <TimelineDemo />
+
+          {/* Testimonials Section */}
+          <TestimonialsSection />
 
           {/* Call to Action */}
-          <div className="relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-cyan-600 rounded-3xl blur opacity-25"></div>
-            <div className="relative backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-12">
-              <h3 className="text-3xl font-bold text-white mb-4">Ready to Transform Your Hiring?</h3>
-              <p className="text-gray-300/80 mb-8 text-lg">Join thousands of companies using AI-powered recruitment</p>
-              <div className="flex items-center justify-center space-x-2 text-purple-300">
-                <Globe className="w-5 h-5" />
-                <span>Trusted by 500+ companies worldwide</span>
-              </div>
+          <div className="text-center py-16">
+            <h3 className="text-3xl font-bold text-black dark:text-white mb-4">Ready to Transform Your Hiring?</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-8 text-lg max-w-2xl mx-auto">Join thousands of companies using AI-powered recruitment to find the best talent faster and more efficiently.</p>
+            <div className="flex items-center justify-center space-x-2 text-gray-500 dark:text-gray-400">
+              <Globe className="w-5 h-5" />
+              <span className="font-medium">Trusted by 500+ companies worldwide</span>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <Footer
+        brandName="Recruitix"
+        brandDescription="AI-powered recruitment platform with advanced proctoring, semantic analysis, and real-time monitoring capabilities for modern hiring needs."
+        socialLinks={[
+          {
+            icon: <Twitter className="w-6 h-6" />,
+            href: "https://twitter.com",
+            label: "Twitter",
+          },
+          {
+            icon: <Linkedin className="w-6 h-6" />,
+            href: "https://linkedin.com",
+            label: "LinkedIn",
+          },
+          {
+            icon: <Github className="w-6 h-6" />,
+            href: "https://github.com",
+            label: "GitHub",
+          },
+          {
+            icon: <Mail className="w-6 h-6" />,
+            href: "mailto:contact@recruitix.com",
+            label: "Email",
+          },
+        ]}
+        navLinks={[
+          { label: "Features", href: "#features" },
+          { label: "Pricing", href: "#pricing" },
+          { label: "About", href: "#about" },
+          { label: "Contact", href: "#contact" },
+          { label: "Privacy", href: "#privacy" },
+          { label: "Terms", href: "#terms" },
+        ]}
+        creatorName="AI Recruitment Team"
+        creatorUrl="https://recruitix.com"
+        brandIcon={<img src="/brain-logo.png" alt="Recruitix Brain Logo" className="w-8 sm:w-10 md:w-14 h-8 sm:h-10 md:h-14 object-contain drop-shadow-lg" />}
+      />
     </div>
   );
 };

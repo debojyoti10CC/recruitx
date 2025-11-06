@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { InterviewPinCard } from '@/components/ui/interview-pin-card';
 import { User, BookOpen, Video, MessageSquare, Trophy, ArrowLeft, Play } from 'lucide-react';
 import TechnicalRound from './TechnicalRound';
 import LiveInterview from './LiveInterview';
@@ -131,67 +132,30 @@ const CandidatePortal = ({ onBack, userInfo }: CandidatePortalProps) => {
           </Card>
         </div>
 
-        {/* Interview Rounds */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Interview Rounds - 3D Pin Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {rounds.map((round) => {
             const isCompleted = completedRounds.includes(round.id);
             const roundScore = scores[round.id];
-            const Icon = round.icon;
 
             return (
-              <Card key={round.id} className="bg-slate-800/80 backdrop-blur-sm border-slate-700 hover:border-slate-600 transition-all duration-300">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className={`w-12 h-12 ${round.color} rounded-lg flex items-center justify-center`}>
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    {isCompleted && (
-                      <Badge className="bg-green-500 text-white">
-                        Completed
-                      </Badge>
-                    )}
-                  </div>
-                  <CardTitle className="text-xl text-white">{round.title}</CardTitle>
-                  <CardDescription className="text-slate-300">{round.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-400">Duration:</span>
-                      <span className="text-slate-300">{round.duration}</span>
-                    </div>
-                    
-                    {isCompleted && roundScore && (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-slate-400">Score:</span>
-                          <span className="text-green-400 font-semibold">
-                            {roundScore.score}/{round.id === 'technical' ? '25' : round.id === 'live' ? '10' : '100'}
-                          </span>
-                        </div>
-                        <Progress value={roundScore.percentage} className="h-2" />
-                        <p className="text-xs text-slate-400 text-center">
-                          {roundScore.percentage.toFixed(1)}%
-                        </p>
-                      </div>
-                    )}
-                    
-                    <Button 
-                      className={`w-full ${round.color} ${round.hoverColor} text-white font-semibold`}
-                      onClick={() => {
-                        if (round.id === 'live') {
-                          setShowLiveInterview(true);
-                        } else {
-                          setCurrentRound(round.id as any);
-                        }
-                      }}
-                    >
-                      <Play className="w-4 h-4 mr-2" />
-                      {isCompleted ? 'Retake' : 'Start'} Round
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <InterviewPinCard
+                key={round.id}
+                id={round.id}
+                title={round.title}
+                description={round.description}
+                duration={round.duration}
+                icon={round.icon}
+                isCompleted={isCompleted}
+                score={roundScore}
+                onStart={() => {
+                  if (round.id === 'live') {
+                    setShowLiveInterview(true);
+                  } else {
+                    setCurrentRound(round.id as any);
+                  }
+                }}
+              />
             );
           })}
         </div>
