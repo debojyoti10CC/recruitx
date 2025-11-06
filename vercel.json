@@ -1,20 +1,8 @@
 {
-  "buildCommand": "rm -rf node_modules package-lock.json && npm install --legacy-peer-deps && npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite",
-  "installCommand": "npm install --legacy-peer-deps",
-  "functions": {
-    "app/api/**/*.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "rewrites": [
     {
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ],
-  "env": {
-    "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
-  }
+  ]
 }
