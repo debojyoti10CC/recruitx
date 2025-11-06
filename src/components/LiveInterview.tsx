@@ -5,17 +5,14 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Video, Eye, AlertCircle, Clock, Mic, MicOff, ChevronLeft, ChevronRight, Shield, Zap, Brain, Code2, AlertTriangle } from 'lucide-react';
+import { MonitoringData, UserProfile, createParameterizedMonitoringTest } from '@/utils/monitoringProfiles';
 
 interface LiveInterviewProps {
   onComplete: (score: number) => void;
   onBack: () => void;
 }
 
-interface MonitoringData {
-  eyeTracking: 'good' | 'warning' | 'alert';
-  faceVisibility: 'complete' | 'partial' | 'not_visible';
-  faceCount: number;
-}
+
 
 const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
   const [isStarted, setIsStarted] = useState(false);
@@ -144,44 +141,40 @@ const LiveInterview = ({ onComplete, onBack }: LiveInterviewProps) => {
     setViolations(prev => [...prev, violationWithTime]);
   };
 
-  // Simulate monitoring - flag violations instead of immediate disqualification
+  // Current user profile for testing (can be changed for different test scenarios)
+  const currentUserProfile: UserProfile = 'normal_user'; // Change this to test different scenarios
+  
+  // Create parameterized monitoring test function
+  const monitoringTestFunction = createParameterizedMonitoringTest(currentUserProfile);
+  const [startTime] = useState(Date.now());
+  
+  // Parameterized monitoring test function
   const simulateMonitoring = () => {
-    const eyeStates: MonitoringData['eyeTracking'][] = ['good', 'good', 'good', 'warning', 'alert'];
-    const faceVisibilityStates: MonitoringData['faceVisibility'][] = ['complete', 'complete', 'complete', 'partial', 'not_visible'];
-    const faceCounts = [0, 1, 1, 1, 1, 2, 3]; // Simulate multiple faces occasionally
-
-    const newEyeTracking = eyeStates[Math.floor(Math.random() * eyeStates.length)];
-    const newFaceVisibility = faceVisibilityStates[Math.floor(Math.random() * faceVisibilityStates.length)];
-    const newFaceCount = faceCounts[Math.floor(Math.random() * faceCounts.length)];
-
-    const newMonitoringData: MonitoringData = {
-      eyeTracking: newEyeTracking,
-      faceVisibility: newFaceVisibility,
-      faceCount: newFaceCount
-    };
+    const elapsedTime = Date.now() - startTime;
+    const newMonitoringData = monitoringTestFunction(elapsedTime);
 
     setMonitoringData(newMonitoringData);
 
-    // FLAG VIOLATIONS INSTEAD OF IMMEDIATE DISQUALIFICATION
+    // FLAG VIOLATIONS BASED ON PREDEFINED SEQUENCE
     
     // 1. Multiple faces detected - CRITICAL VIOLATION
-    if (newFaceCount > 1) {
-      flagViolation(`Multiple faces detected (${newFaceCount} faces)`, 'critical');
+    if (newMonitoringData.faceCount > 1) {
+      flagViolation(`Multiple faces detected (${newMonitoringData.faceCount} faces)`, 'critical');
     }
 
     // 2. No face or face not visible - WARNING VIOLATION
-    if (newFaceCount === 0) {
+    if (newMonitoringData.faceCount === 0) {
       flagViolation('No face detected', 'warning');
-    } else if (newFaceVisibility === 'not_visible') {
+    } else if (newMonitoringData.faceVisibility === 'not_visible') {
       flagViolation('Face not visible', 'warning');
-    } else if (newFaceVisibility === 'partial') {
+    } else if (newMonitoringData.faceVisibility === 'partial') {
       flagViolation('Partial face visibility', 'warning');
     }
 
     // 3. Eye tracking violations - WARNING VIOLATIONS
-    if (newEyeTracking === 'alert') {
+    if (newMonitoringData.eyeTracking === 'alert') {
       flagViolation('Looking away from screen', 'warning');
-    } else if (newEyeTracking === 'warning') {
+    } else if (newMonitoringData.eyeTracking === 'warning') {
       flagViolation('Distracted behavior detected', 'warning');
     }
   };

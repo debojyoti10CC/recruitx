@@ -6,6 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ArrowLeft, MessageSquare, Mic, MicOff, Clock, Send, Bot, Camera, Eye, Smile, Frown, Meh, AlertTriangle } from 'lucide-react';
+import { createRepeatableSimulationEngine, simulationProfiles } from '@/utils/hrSimulationEngine';
 
 interface HRSimulationProps {
   onComplete: () => void;
@@ -91,22 +92,25 @@ const HRSimulation = ({ onComplete, onBack, candidateInfo, role }: HRSimulationP
     }
   }, [isStarted]);
 
-  // Simulate face expression detection
+  // Create repeatable simulation engine
+  const simulationEngine = createRepeatableSimulationEngine(simulationProfiles.balanced_candidate);
+  const [simulationStartTime] = useState(Date.now());
+
+  // Deterministic simulation engine
   useEffect(() => {
     if (!cameraEnabled) return;
     
-    const expressionTimer = setInterval(() => {
-      const expressions: ('happy' | 'neutral' | 'concerned')[] = ['happy', 'neutral', 'concerned'];
-      const randomExpression = expressions[Math.floor(Math.random() * expressions.length)];
-      setFaceExpression(randomExpression);
+    const simulationTimer = setInterval(() => {
+      const elapsed = Date.now() - simulationStartTime;
+      const currentEvent = simulationEngine(elapsed);
       
-      // Update confidence based on expression
-      const confidenceMap = { happy: 85, neutral: 75, concerned: 60 };
-      setConfidence(confidenceMap[randomExpression] + Math.random() * 10 - 5);
-    }, 3000);
+      setFaceExpression(currentEvent.expression);
+      setConfidence(currentEvent.confidence);
+      setClarty(currentEvent.clarity);
+    }, 1000);
 
-    return () => clearInterval(expressionTimer);
-  }, [cameraEnabled]);
+    return () => clearInterval(simulationTimer);
+  }, [cameraEnabled, simulationEngine, simulationStartTime]);
 
   // Track typing speed
   useEffect(() => {

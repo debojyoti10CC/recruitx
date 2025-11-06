@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Clock, ChevronLeft, ChevronRight, Code } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
+import { calculateSemanticSimilarity } from '@/utils/semanticSimilarity';
 
 interface TechnicalRoundProps {
   onComplete: (round: string, score: number, percentage: number) => void;
@@ -69,6 +70,8 @@ const TechnicalRound = ({ onComplete, onBack }: TechnicalRoundProps) => {
     }
   }, [isStarted, timeLeft]);
 
+
+
   const calculateScore = () => {
     let correctAnswers = 0;
     const totalQuestions = 25;
@@ -78,9 +81,12 @@ const TechnicalRound = ({ onComplete, onBack }: TechnicalRoundProps) => {
       
       if (q.type === 'mcq' && userAnswer === q.correct) {
         correctAnswers += 1;
-      } else if (q.type === 'coding' && userAnswer && userAnswer.trim().length > 20) {
-        // For coding questions, give credit if substantial code is written
-        correctAnswers += 1;
+      } else if (q.type === 'coding' && userAnswer) {
+        // Use semantic similarity for coding questions
+        const similarity = calculateSemanticSimilarity(userAnswer, q.correct);
+        if (similarity >= 0.3) { // 30% similarity threshold
+          correctAnswers += similarity; // Partial credit based on similarity
+        }
       }
     });
     
