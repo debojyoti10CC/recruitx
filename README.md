@@ -67,6 +67,7 @@ Core Components:
 ```bash
 git clone https://github.com/debojyoti10cc/Recruitix.git
 cd Recruitix
+
 2️⃣ Install Dependencies
 bash
 Copy code
