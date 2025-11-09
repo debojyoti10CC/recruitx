@@ -11,8 +11,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === 'development' &&
-    componentTagger(),
+    mode === 'development' && componentTagger(),
   ].filter(Boolean),
   resolve: {
     alias: {
@@ -20,18 +19,15 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
+    minify: 'esbuild',
+    sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          ui: ['@radix-ui/react-accordion', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+          firebase: ['firebase/auth', 'firebase/firestore'],
         },
       },
     },
-    target: 'esnext',
-    minify: 'esbuild',
-  },
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'framer-motion'],
   },
 }));
