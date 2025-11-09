@@ -1,12 +1,4 @@
-That is a comprehensive and well-structured README\! It clearly introduces the project, its goals, and its technical details.
 
-However, the raw copy-pasted text has some formatting errors that make it difficult to read and unprofessional, particularly the broken code blocks and the use of unconventional separators.
-
-Here is the fixed and polished `README.md` content, using standard Markdown for better clarity and rendering.
-
-## 📝 Fixed and Polished README.md
-
-```markdown
 # Recruitix Live Integrity System
 
 ## A Parameterized and Deterministic Framework for Robust AI-Driven Assessment and Integrity Validation
